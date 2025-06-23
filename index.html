@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLLMs for Human-Robot Collaboration - Interactive Research Visualization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e27;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #a0a0a0;
+            margin-bottom: 3rem;
+        }
+
+        /* Main Sections */
+        .section {
+            padding: 5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Interactive Diagram */
+        .diagram-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .diagram-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Interactive Loop Visualization */
+        .loop-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .loop-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid transparent;
+        }
+
+        .loop-item:hover {
+            transform: translateY(-10px);
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .loop-item-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .loop-item h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, #667eea, transparent);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 2rem;
+            width: 45%;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:nth-child(odd) {
+            left: 0;
+        }
+
+        .timeline-item:nth-child(even) {
+            left: 55%;
+        }
+
+        .timeline-item:hover {
+            transform: scale(1.05);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .timeline-item:nth-child(odd)::after {
+            right: -60px;
+        }
+
+        .timeline-item:nth-child(even)::after {
+            left: -60px;
+        }
+
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 40%);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .feature-card:hover::before {
+            top: -150%;
+            left: -150%;
+            opacity: 1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Interactive Demo */
+        .demo-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 3rem 0;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .demo-button {
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .demo-content {
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+        }
+
+        /* Floating Animation */
+        .float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .loop-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-item {
+                width: 90%;
+                left: 5% !important;
+            }
+            
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .timeline-item::after {
+                left: -40px !important;
+            }
+        }
+
+        /* Scroll Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-content">
+            <div class="logo">MLLM-HRC</div>
+            <ul class="nav-links">
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#loop">HRC Loop</a></li>
+                <li><a href="#pathways">Pathways</a></li>
+                <li><a href="#applications">Applications</a></li>
+                <li><a href="#demo">Demo</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="float">Empowering Natural Human-Robot Collaboration</h1>
+            <p class="hero-subtitle">Through Multimodal Language Models and Spatial Intelligence</p>
+            <div class="demo-buttons">
+                <button class="demo-button" onclick="scrollToSection('overview')">Explore Research</button>
+                <button class="demo-button" onclick="scrollToSection('demo')">Interactive Demo</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overview Section -->
+    <section id="overview" class="section fade-in">
+        <h2 class="section-title">Research Overview</h2>
+        <div class="diagram-container">
+            <div class="loop-container">
+                <div class="loop-item" onclick="showDetails('perception')">
+                    <div class="loop-item-icon">👁️</div>
+                    <h3>Perception</h3>
+                    <p>Understanding human intent, detecting objects, and comprehending 3D scenes</p>
+                </div>
+                <div class="loop-item" onclick="showDetails('cognition')">
+                    <div class="loop-item-icon">🧠</div>
+                    <h3>Cognition</h3>
+                    <p>Task planning, affordance learning, and decision making</p>
+                </div>
+                <div class="loop-item" onclick="showDetails('actuation')">
+                    <div class="loop-item-icon">🤖</div>
+                    <h3>Actuation</h3>
+                    <p>Executing actions through imitation learning and reinforcement learning</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HRC Loop Section -->
+    <section id="loop" class="section fade-in">
+        <h2 class="section-title">Human-Robot Collaboration Loop</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Human Intent Recognition</h3>
+                <p>MLLMs enable robots to understand human gestures, speech, and physiological states in real-time</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>Open-Vocabulary Detection</h3>
+                <p>Advanced object detection without predefined categories using vision-language models</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>3D Scene Understanding</h3>
+                <p>Spatial awareness and navigation capabilities for complex environments</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📋</div>
+                <h3>Task Planning</h3>
+                <p>Breaking down high-level instructions into executable robot actions</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <h3>Learning from Demonstration</h3>
+                <p>Acquiring skills from human videos and demonstrations</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Real-time Execution</h3>
+                <p>Language-conditioned policies for adaptive robot control</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pathways Section -->
+    <section id="pathways" class="section fade-in">
+        <h2 class="section-title">Pathways to Spatial Intelligence</h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <h3>Out-of-Box Usage</h3>
+                <p>Direct application of pre-trained MLLMs without task-specific training</p>
+            </div>
+            <div class="timeline-item">
+                <h3>Instruction Tuning</h3>
+                <p>Fine-tuning models with robot-specific data and instructions</p>
+            </div>
+            <div class="timeline-item">
+                <h3>Robotics Transformer & VLA</h3>
+                <p>Specialized architectures for vision-language-action integration</p>
+            </div>
+            <div class="timeline-item">
+                <h3>World Models</h3>
+                <p>Building internal representations of the physical world</p>
+            </div>
+            <div class="timeline-item">
+                <h3>Embodied Specialist Agents</h3>
+                <p>Task-specific models for manufacturing and industrial applications</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Applications Section -->
+    <section id="applications" class="section fade-in">
+        <h2 class="section-title">Real-World Applications</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤝</div>
+                <h3>Human-Robot Handover</h3>
+                <p>Seamless object transfer between humans and robots</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏭</div>
+                <h3>Smart Manufacturing</h3>
+                <p>Collaborative assembly and quality control in industrial settings</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3>Brain-Computer Interface</h3>
+                <p>Direct neural control of robotic systems</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Demo Section -->
+    <section id="demo" class="section fade-in">
+        <h2 class="section-title">Interactive Demo</h2>
+        <div class="demo-container">
+            <div class="demo-buttons">
+                <button class="demo-button" onclick="showDemo('perception')">Perception Demo</button>
+                <button class="demo-button" onclick="showDemo('planning')">Task Planning Demo</button>
+                <button class="demo-button" onclick="showDemo('execution')">Execution Demo</button>
+            </div>
+            <div class="demo-content" id="demo-content">
+                <p>Select a demo to see MLLM-HRC in action</p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Scroll to section
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Show details for loop items
+        function showDetails(type) {
+            const details = {
+                perception: "Perception involves multimodal sensing including visual (RGB, depth), auditory, and tactile inputs. MLLMs process these to understand human intent, detect objects with open vocabulary, and build 3D scene representations.",
+                cognition: "Cognition encompasses affordance learning, task planning, and reasoning. MLLMs break down high-level instructions into executable actions, learn from demonstrations, and make decisions based on environmental context.",
+                actuation: "Actuation translates plans into physical actions through language-conditioned imitation learning, reinforcement learning, and diffusion policies. This enables adaptive robot control in dynamic environments."
+            };
+            
+            alert(details[type]);
+        }
+
+        // Interactive demo
+        function showDemo(type) {
+            const demoContent = document.getElementById('demo-content');
+            const demos = {
+                perception: `
+                    <div style="text-align: center;">
+                        <h3>Object Detection with Open Vocabulary</h3>
+                        <p>🤖 Robot: "I see a <span style="color: #667eea;">blue wrench</span> on the table next to a <span style="color: #667eea;">screwdriver</span>."</p>
+                        <p>👤 Human: "Please hand me the tool for tightening bolts."</p>
+                        <p>🤖 Robot: "Understood. I'll pick up the <span style="color: #667eea;">wrench</span> for you."</p>
+                    </div>
+                `,
+                planning: `
+                    <div style="text-align: center;">
+                        <h3>Task Decomposition</h3>
+                        <p>📋 Task: "Assemble the circuit board"</p>
+                        <p>Steps:</p>
+                        <ol style="text-align: left; display: inline-block;">
+                            <li>Identify components ✓</li>
+                            <li>Pick up resistor ✓</li>
+                            <li>Insert into position A3 ⏳</li>
+                            <li>Solder connection</li>
+                            <li>Verify placement</li>
+                        </ol>
+                    </div>
+                `,
+                execution: `
+                    <div style="text-align: center;">
+                        <h3>Real-time Adaptation</h3>
+                        <p>🎯 Current Action: Grasping object</p>
+                        <div style="margin: 20px 0;">
+                            <div style="background: rgba(99, 102, 241, 0.3); height: 20px; border-radius: 10px; overflow: hidden;">
+                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; width: 75%; transition: width 1s ease;"></div>
+                            </div>
+                        </div>
+                        <p>Confidence: 75%</p>
+                        <p>🔄 Adjusting grip based on object properties...</p>
+                    </div>
+                `
+            };
+            
+            demoContent.innerHTML = demos[type];
+        }
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Add interactive hover effects
+        document.querySelectorAll('.loop-item, .feature-card').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
